@@ -1,0 +1,3 @@
+CCleaner : I think everyone knows this program, it justs optimizes your PC performance by deleting junk files on your PC, and more...
+
+Open-Shell : Ok, this one is interesting, why did I add it to the list? Well, you see, Windows 10 Start Menu is very slow to open and some people can't even open it. Open-Shell is the solution, it's an updated fork of Classic Shell and brings a non-laggy and cool start menu.
