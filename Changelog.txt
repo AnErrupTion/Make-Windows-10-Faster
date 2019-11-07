@@ -1,0 +1,10 @@
+1.0 :
+- First version!
+
+1.1 :
+- Added more tweaks and removed/fixed some in the Optimize Windows.bat file.
+- Added the Changelog.txt file.
+- Fixed the Freeup Memory.exe program.
+- Updated the CCleaner and Open-Shell programs to their latest versions.
+- Added a program to block Microsoft Edge and also updated the Credits.txt file.
+- Moved the Boost.vbs, Boost2.vbs and READ ME.txt file to the Free up RAM folder.

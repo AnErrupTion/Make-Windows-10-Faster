@@ -1,6 +1,7 @@
 wikiHow - Boost.vbs and Boost2.vbs
-ErrupTion_ (me) - Optimize Windows.bat
+AnErrupTion (me) - Optimize Windows.bat
 Disassembler0 - Remove Windows 10 Built-in Apps (original name : Win10-Initial-Setup-Script)
 Piriform - CCleaner
 Open-Shell - Open-Shell-Menu
 AfaoMAX - Freeup Memory.exe (Visual Basic Tutorial: Clear the memory Cache)
+Sordum - ReduceMemory.exe and EdgeBlock.exe
