@@ -10,7 +10,7 @@
 ##########
 
 # Disable Telemetry
-# Note: This tweak also disables the possibility to join Windows Insider Program, as it requires Telemetry data.
+# Note: This tweak also disables the possibility to join Windows Insider Program and breaks Microsoft Intune enrollment/deployment, as these feaures require Telemetry data.
 # Windows Update control panel may show message "Your device is at risk because it's out of date and missing important security and quality updates. Let's get you back on track so Windows can run more securely. Select this button to get going".
 # In such case, enable telemetry, run Windows update and then disable telemetry again.
 # See also https://github.com/Disassembler0/Win10-Initial-Setup-Script/issues/57 and https://github.com/Disassembler0/Win10-Initial-Setup-Script/issues/92
@@ -483,6 +483,7 @@ Function SetP2PUpdateInternet {
 }
 
 # Disable Windows Update P2P delivery optimization completely
+# Note: Completely disabling delivery optimization can break Windows Store downloads - see https://github.com/Disassembler0/Win10-Initial-Setup-Script/issues/281
 Function SetP2PUpdateDisable {
 	Write-Output "Disabling Windows Update P2P optimization..."
 	If ([System.Environment]::OSVersion.Version.Build -eq 10240) {
@@ -515,6 +516,7 @@ Function EnableDiagTrack {
 }
 
 # Stop and disable Device Management Wireless Application Protocol (WAP) Push Service
+# Note: This service is needed for Microsoft Intune interoperability
 Function DisableWAPPush {
 	Write-Output "Stopping and disabling Device Management WAP Push Service..."
 	Stop-Service "dmwappushservice" -WarningAction SilentlyContinue
@@ -1530,6 +1532,18 @@ Function EnableAutoRebootOnCrash {
 ##########
 #region UI Tweaks
 ##########
+
+# Set the time to display the list of OS to 0 (automatic)
+Function DisableOSList {
+	Write-Host "Setting the time to display the list of OS to automatic..."
+	bcdedit /timeout 0
+}
+
+# Set the time to display the list of OS to 5 (seconds)
+Function EnableOSList {
+	Write-Host "Setting the time to display the list of OS to 5 seconds..."
+	bcdedit /timeout 5
+}
 
 # Disable Action Center (Notification Center)
 Function DisableActionCenter {
@@ -3003,6 +3017,53 @@ Function InstallMsftBloat {
 # dism /Unmount-Image /Discard /MountDir:C:\Mnt
 # Remove-Item -Path C:\Mnt -Recurse
 
+# De-provision default Microsoft applications - Warning: Re-provisioning is not possible
+Function DeprovisionMsftBloat {
+	Write-Output "De-provisioning default Microsoft applications..."
+
+	# Sources:
+	#  https://docs.microsoft.com/en-us/windows/application-management/apps-in-windows-10
+	#  https://gal.vin/2017/04/06/removing-uwp-apps-mdt/
+
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.3DBuilder"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.BingWeather"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.DesktopAppInstaller"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.GetHelp"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.Getstarted"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.HEIFImageExtension"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.HEVCVideoExtension"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.Messaging"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.Microsoft3DViewer"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.MicrosoftOfficeHub"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.MicrosoftSolitaireCollection"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.MicrosoftStickyNotes"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.MixedReality.Portal"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.MSPaint"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.Office.OneNote"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.OneConnect"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.People"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.Print3D"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.ScreenSketch"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.SkypeApp"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.StorePurchaseApp"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.VP9VideoExtensions"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.Wallet"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.WebMediaExtensions"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.WebpImageExtension"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.Windows.Photos"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.WindowsAlarms"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.WindowsCalculator"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.WindowsCamera"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "microsoft.windowscommunicationsapps"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.WindowsFeedbackHub"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.WindowsMaps"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.WindowsSoundRecorder"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	#Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.WindowsStore"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.YourPhone"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.ZuneMusic"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.ZuneVideo"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+}
+
 # Uninstall default third party applications
 function UninstallThirdPartyBloat {
 	Write-Output "Uninstalling default third party applications..."
@@ -3042,6 +3103,7 @@ function UninstallThirdPartyBloat {
 	Get-AppxPackage "king.com.CandyCrushFriends" | Remove-AppxPackage
 	Get-AppxPackage "king.com.CandyCrushSaga" | Remove-AppxPackage
 	Get-AppxPackage "king.com.CandyCrushSodaSaga" | Remove-AppxPackage
+	Get-AppxPackage 'king.com.FarmHeroesSaga' | Remove-AppxPackage
 	Get-AppxPackage "LenovoCorporation.LenovoID" | Remove-AppxPackage
 	Get-AppxPackage "LenovoCorporation.LenovoSettings" | Remove-AppxPackage
 	Get-AppxPackage "Nordcurrent.CookingFever" | Remove-AppxPackage
@@ -3092,6 +3154,7 @@ Function InstallThirdPartyBloat {
 	Get-AppxPackage -AllUsers "king.com.CandyCrushFriends" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "king.com.CandyCrushSaga" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "king.com.CandyCrushSodaSaga" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
+	Get-AppxPackage -AllUsers "king.com.FarmHeroesSaga" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "LenovoCorporation.LenovoID" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "LenovoCorporation.LenovoSettings" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
 	Get-AppxPackage -AllUsers "Nordcurrent.CookingFever" | ForEach-Object {Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml"}
@@ -3168,6 +3231,18 @@ Function EnableFullscreenOptims {
 	Remove-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_FSEBehavior" -ErrorAction SilentlyContinue
 	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_FSEBehaviorMode" -Type DWord -Value 0
 	Set-ItemProperty -Path "HKCU:\System\GameConfigStore" -Name "GameDVR_HonorUserFSEBehaviorMode" -Type DWord -Value 0
+}
+
+# De-provision Xbox features - Warning: Re-provisioning is not possible
+Function DeprovisionXboxFeatures {
+	Write-Output "De-provisioning Xbox features..."
+
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.XboxApp"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.XboxIdentityProvider"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.XboxSpeechToTextOverlay"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.XboxGameOverlay"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.XboxGamingOverlay"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
+	Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq "Microsoft.Xbox.TCUI"} | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue | Out-Null
 }
 
 # Disable built-in Adobe Flash in IE and Edge
@@ -3362,6 +3437,33 @@ Function UninstallHyperV {
 	} Else {
 		Uninstall-WindowsFeature -Name "Hyper-V" -IncludeManagementTools -WarningAction SilentlyContinue | Out-Null
 	}
+}
+
+# Uninstall OpenSSH Client - Applicable since 1803
+Function UninstallSSHClient {
+	Write-Output "Uninstalling OpenSSH Client..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "OpenSSH.Client*" } | Remove-WindowsCapability -Online | Out-Null
+}
+
+# Install OpenSSH Client
+Function InstallSSHClient {
+	Write-Output "Installing OpenSSH Client..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "OpenSSH.Client*" } | Add-WindowsCapability -Online | Out-Null
+}
+
+# Install OpenSSH Server - Applicable since 1809
+Function InstallSSHServer {
+	Write-Output "Installing OpenSSH Server..."
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "OpenSSH.Server*" } | Add-WindowsCapability -Online | Out-Null
+	Set-Service "sshd" -StartupType Automatic
+	Start-Service "sshd" -WarningAction SilentlyContinue
+}
+
+# Uninstall OpenSSH Server
+Function UninstallSSHServer {
+	Write-Output "Uninstalling OpenSSH Server..."
+	Stop-Service "sshd" -WarningAction SilentlyContinue
+	Get-WindowsCapability -Online | Where-Object { $_.Name -like "OpenSSH.Server*" } | Remove-WindowsCapability -Online | Out-Null
 }
 
 # Install .NET Framework 2.0, 3.0 and 3.5 runtimes - Requires internet connection
