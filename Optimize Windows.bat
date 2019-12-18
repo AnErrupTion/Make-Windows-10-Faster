@@ -59,7 +59,7 @@ endlocal
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MSMQ\Parameters" /v "TCPNoDelay" /t REG_DWORD /d "1" /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d "0" /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d "4294967295" /f
-reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v "LargeSystemCache" /t REG_DWORD /d "0" /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v "LargeSystemCache" /t REG_DWORD /d "1" /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Affinity" /t REG_DWORD /d "0" /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Background Only" /t REG_SZ /d "False" /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Clock Rate" /t REG_DWORD /d "2710" /f
@@ -116,11 +116,21 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender" /v Dis
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v DisableBehaviorMonitoring /t REG_DWORD /d "1" /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v DisableOnAccessProtection /t REG_DWORD /d "1" /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v DisableScanOnRealtimeEnable /t REG_DWORD /d "1" /f
+reg add "HKCU\SOFTWARE\Microsoft\Games" /v FpsAll /t REG_DWORD /d "1" /f
+reg add "HKCU\SOFTWARE\Microsoft\Games" /v GameFluidity /t REG_DWORD /d "1" /f
+reg add "HKCU\SOFTWARE\Microsoft\Games" /v FpsStatusGames /t REG_DWORD /d "10" /f
+reg add "HKCU\SOFTWARE\Microsoft\Games" /v FpsStatusGamesAll /t REG_DWORD /d "4" /f
+reg add "HKCU\Control Panel\Mouse" /v MouseSpeed /t REG_SZ /d "0" /f
+reg add "HKCU\Control Panel\Mouse" /v MouseThreshold1 /t REG_SZ /d "0" /f
+reg add "HKCU\Control Panel\Mouse" /v MouseThreshold2 /t REG_SZ /d "0" /f
+reg add "HKCU\Control Panel\Accessibility\Keyboard Response" /v AutoRepeatDelay /t REG_SZ /d "500" /f
+reg add "HKCU\Control Panel\Accessibility\Keyboard Response" /v AutoRepeatRate /t REG_SZ /d "20" /f
+reg add "HKCU\Control Panel\Accessibility\Keyboard Response" /v DelayBeforeAcceptance /t REG_SZ /d "0" /f
+reg add "HKCU\Control Panel\Accessibility\Keyboard Response" /v Flags /t REG_SZ /d "27" /f
 :: Deleting some Windows and temporary files, they are useless in most cases.
 del /q %softdir%\*
 for /d %%x in (%softdir%\*) do @rd /s /q ^"%%x^"
 if exist %oldwin% (rmdir /s /q %oldwin%)
-del /q %prefetch%\*
 del /q %loctemp%\*
 for /d %%x in (%loctemp%\*) do @rd /s /q ^"%%x^"
 del /q %wintemp%\*
@@ -133,23 +143,11 @@ if exist %ondir% (
     taskkill /f /im OneDrive.exe
     wmic /node:"hostname" product where name="Microsoft OneDrive" call uninstall /nointeractive
 )
-:: Killing useless processes such as the updating services from most chromium-based browsers, since when you'll restart your computer they will launch again (you must disable the service to make them not launch again).
-taskkill /f /im CryptoTabUpdate.exe
-taskkill /f /im CryptoTabCrashHandler64.exe
-taskkill /f /im CryptoTabCrashHandler.exe
-taskkill /f /im BraveUpdate.exe
-taskkill /f /im HTTPDebuggerSvc.exe
-taskkill /f /im HTTPDebuggerPro.exe
-taskkill /f /im MicrosoftEdgeUpdate.exe
-taskkill /f /im ChromeUpdate.exe
-taskkill /f /im SearchUI.exe
 :: Stopping useless and resources-consuming services to make the PC a bit faster since it will have more free general resources.
 net stop "WSearch" & sc config "WSearch" start=disabled
 net stop "wuauserv" & sc config "wuauserv" start=disabled
 net stop "SysMain" & sc config "SysMain" start=disabled
-net stop "Superfetch" & sc config "Superfetch" start=disabled
 net stop "TrustedInstaller" & sc config "TrustedInstaller" start=disabled
-net stop "HTTPDebuggerPro" & sc config "HTTPDebuggerPro" start=disabled
 net stop "BITS" & sc config "BITS" start=disabled
 net stop "MapsBroker" & sc config "MapsBroker" start=disabled
 net stop "DoSvc" & sc config "DoSvc" start=disabled
@@ -157,11 +155,11 @@ net stop "DiagTrack" & sc config "DiagTrack" start=disabled
 net stop "dmwappushservice" & sc config "dmwappushservice" start=disabled
 :: Setting the default DNS to the cloudflare's one because it's one of the fastest out there.
 wmic nicconfig where (IPEnabled=TRUE) call SetDNSServerSearchOrder ("1.1.1.1", "1.0.0.1")
-:: Flushing the DNS, in other words this will clear the network's DNS cache so it will remove outdated things in it. Note that web pages could be slower to load since the cache has been cleared.
-ipconfig /flushdns
-:: Two bcdedit tweaks, the first one will improve fps by deleting the "useplatformclock" value (why not disabling it only you may ask? Well, if you only disable it and you restart your computer, it will prompt a text where it'll says that it sucessfully disabled that value, which in most cases we don't want.)
-:: The second one will increase the free (available) virtual memory by adding as value the amount of RAM in megabytes (i.e. if you have 4GB of RAM, you'll put 4096).
-bcdedit /deletevalue useplatformclock
+:: 'Registering' the DNS, in other words this is NOT flushing it. It will refresh the network dns but without flushing it.
+ipconfig /registerdns
+:: Two bcdedit tweaks, the first one will improve fps by setting the "useplatformclock" value to true. If set to true and your computer supports HPET, it will be used. If it doesn't support it, it won't be used.
+:: The second one will increase the free (available) virtual memory by adding as value the amount of RAM in megabytes.
+bcdedit /set useplatformclock true
 bcdedit /set IncreaseUserVA %mbram%
 :: These are unclassified tweaks that will basically improve Windows 10.
 powercfg /hibernate off
@@ -170,7 +168,9 @@ net user administrator /active:yes
 "%~dp0SetACL.exe" -on "C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy\SearchUI.exe" -ot file -actn setowner -ownr "n:%USERNAME%"
 "%~dp0SetACL.exe" -on "C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy\SearchUI.exe" -ot file -actn ace -ace "n:%USERNAME%;p:full"
 "%~dp0SetACL.exe" -on "C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy\SearchUI.exe" -ot file -actn ace -ace "n:System;p:read"
-ren "C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy\SearchUI.exe" "SearchUI.bak"
+ren "C:\Windows\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy" "C:\Windows\SystemApps\fuckcortana"
+ren "C:\Windows\SystemApps\Microsoft.MicrosoftEdge_8wekyb3d8bbwe" "C:\Windows\SystemApps\fuckedge"
+ren "C:\Windows\SystemApps\Microsoft.MicrosoftEdgeDevToolsClient_8wekyb3d8bbwe" "C:\Windows\SystemApps\fuckedgedevtools"
 :: And finally, we're clearing the event logs from the Microsoft's built-in softwares in Windows 10, this is generally to make the PC faster.
 for /F "tokens=*" %%G in ('wevtutil el') DO (call :clearlogs "%%G")
 :clearlogs
