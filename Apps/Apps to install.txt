@@ -4,5 +4,6 @@ CCleaner can also disable planned tasks, remove browsers extensions, uninstall a
 Download CCleaner at : https://www.ccleaner.com/ccleaner/download
 
 Open-Shell : Ok, this one is interesting, why did I add it to the list? Well, you see, Windows 10 Start Menu is very slow to open and some people can't even open it. Open-Shell is the solution, it's an updated fork of Classic Shell and brings a non-laggy and cool start menu.
+Also, the 1.3 update of the Optimize Windows script disables completely the Windows 10 Start Menu, so be careful and install Open-Shell before running that script.
 
 Download Open-Shell at : https://ci.appveyor.com/project/passionate-coder/open-shell-menu/branch/master/artifacts
