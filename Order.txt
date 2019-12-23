@@ -1,5 +1,0 @@
-1) Firstly, run the Remove Windows 10 Built-in Apps script /!\ AS ADMIN /!\.
-2) Run the Optimize Windows script /!\ AS ADMIN /!\.
-3) Install the apps in the Apps folder if you want to.
-4) Reduce memory usage by running the programs in the Free up RAM folder if you want to.
-5) Congratulations! You've successfully ran correctly everything. Enjoy a faster PC!
