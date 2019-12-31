@@ -35,11 +35,14 @@ Current Changelog :
 - Updated the Apps to install text file in the Apps folder.
 - Added back the VBS scripts in the Free up RAM folder.
 
+1.4 :
+- Fixed the cortana, edge and shellexperiencehost folders not being renamed correctly.
+- Updated the Optimize Windows script.
+- Updated the credits.
+
 Credits :
 wikiHow - Boost.vbs and Boost2.vbs
-AnErrupTion (me) - Optimize Windows.bat
-Disassembler0 - Remove Windows 10 Built-in Apps (original name : Win10-Initial-Setup-Script)
-Piriform - CCleaner
-Open-Shell - Open-Shell-Menu
+AnErrupTion (me) - Optimize Windows.bat (with the help of internet lol)
+Disassembler0 - Remove Windows 10 Built-in Apps (original name : Win10-Initial-Setup-Script), edited by AnErrupTion (me)
 AfaoMAX - Freeup Memory.exe (Visual Basic Tutorial: Clear the memory Cache)
-Sordum - ReduceMemory.exe and EdgeBlock.exe
+Sordum - ReduceMemory.exe
